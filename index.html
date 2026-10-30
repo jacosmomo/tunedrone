@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Drone Player 442Hz & Metronomo - Vintage Edition</title>
+    <!-- Offline & Standalone Embedded CSS (No external CDN/Font dependencies) -->
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: #110d08;
+            background-image: radial-gradient(#261b10 1px, transparent 1px);
+            background-size: 16px 16px;
+            color: #e2c9a5;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+            padding: 10px;
+            min-height: 100vh;
+            display: -webkit-box;
+            display: -webkit-flex;
+            display: -ms-flexbox;
+            display: flex;
+            -webkit-box-pack: center;
+            -webkit-justify-content: center;
+            -ms-flex-pack: center;
+            justify-content: center;
+            -webkit-box-align: center;
+            -webkit-align-items: center;
+            -ms-flex-align: center;
+            align-items: center;
+        }
+
+        /* Vintage Panel Layout */
+        .vintage-panel {
+            background: #1e160e;
+            background: linear-gradient(145deg, #2a1f15, #18110a);
+            border: 2px solid #5a432b;
+            box-shadow: inset 0 1px 1px rgba(255,255,255,0.1), 0 10px 25px rgba(0,0,0,0.8);
+            border-radius: 12px;
+            width: 100%;
+            max-width: 520px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #5a432b;
+            padding-bottom: 10px;
+        }
+
+        .tube-container {
+            display: flex;
+            gap: 6px;
+            background: #120d08;
+            padding: 6px;
+            border-radius: 20px;
+            border: 1px solid #423224;
+        }
+
+        .tube-glow {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #332211;
+            border: 1px solid #553311;
+            transition: all 0.4s ease;
+        }
+        .tube-glow.active {
+            background: #ff9900;
+            box-shadow: 0 0 10px #ff6600, 0 0 16px #ffaa00;
+        }
+
+        .brand-title {
+            font-size: 16px;
+            font-weight: 900;
+            letter-spacing: 1.5px;
+            color: #d4af37;
+            text-transform: uppercase;
+        }
+        .brand-sub {
+            font-size: 9px;
+            color: #a38763;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* Radio Dial Glass Display */
+        .radio-dial-glass {
+            background: linear-gradient(180deg, rgba(20,15,10,0.95) 0%, rgba(35,25,15,0.95) 100%);
+            border: 2px solid #8c6d3f;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.9), 0 0 8px rgba(140, 109, 63, 0.4);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            height: 96px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* Experienced Musician Green Sweet-Spot Zone (±4 cents around center) */
+        .dial-sweet-zone {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 46%; /* Centered around 50% (±4 cents region) */
+            width: 8%;
+            background: rgba(0, 255, 128, 0.12);
+            border-left: 1px dashed rgba(0, 255, 128, 0.4);
+            border-right: 1px dashed rgba(0, 255, 128, 0.4);
+            pointer-events: none;
+            box-shadow: inset 0 0 8px rgba(0, 255, 128, 0.15);
+        }
+
+        .dial-scale {
+            position: relative;
+            height: 22px;
+            border-bottom: 1px solid #543f28;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            padding: 0 8px;
+            font-family: monospace;
+            font-size: 9px;
+            color: #a88f76;
+            z-index: 2;
+        }
+
+        .dial-center-mark {
+            color: #2be880;
+            font-weight: bold;
+            text-shadow: 0 0 4px rgba(43, 232, 128, 0.6);
+        }
+
+        .needle-line {
+            width: 2px;
+            height: 100%;
+            background: #ff3300;
+            box-shadow: 0 0 6px #ff3300, 0 0 2px #ffffff;
+            position: absolute;
+            top: 0;
+            transform: translateX(-50%);
+            transition: left 0.03s linear, background-color 0.15s ease;
+            z-index: 3;
+        }
+
+        .needle-line.in-tune {
+            background: #00ff88;
+            box-shadow: 0 0 8px #00ff88, 0 0 2px #ffffff;
+        }
+
+        .tuner-info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 4px;
+            z-index: 2;
+        }
+
+        .dial-center-mark {
+            color: #d4af37;
+            font-weight: bold;
+        }
+
+        .needle-line {
+            width: 2px;
+            height: 100%;
+            background: #ff3300;
+            box-shadow: 0 0 6px #ff3300, 0 0 2px #ffffff;
+            position: absolute;
+            top: 0;
+            transform: translateX(-50%);
+            transition: left 0.03s linear;
+        }
+
+        .tuner-info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 4px;
+        }
+
+        /* Buttons & Grid */
+        .vintage-btn {
+            background: linear-gradient(180deg, #423224 0%, #221810 100%);
+            border: 1px solid #735738;
+            box-shadow: 0 3px 0 #120c07, 0 4px 6px rgba(0,0,0,0.6);
+            color: #d1b894;
+            font-size: 11px;
+            font-weight: bold;
+            border-radius: 6px;
+            padding: 6px 10px;
+            cursor: pointer;
+            text-align: center;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+        }
+        .vintage-btn:active, .vintage-btn-active {
+            background: linear-gradient(180deg, #8c6328 0%, #543a13 100%);
+            border-color: #d4af37;
+            box-shadow: 0 1px 0 #120c07, inset 0 2px 4px rgba(0,0,0,0.8);
+            color: #fff3d1;
+            transform: translateY(2px);
+        }
+
+        .note-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 6px;
+        }
+
+        .box-section {
+            background: #1a130c;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #423224;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 6px;
+        }
+
+        .lbl-title {
+            font-size: 9px;
+            color: #a88f76;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        select, input[type=range] {
+            background: #120c07;
+            border: 1px solid #543f28;
+            color: #ffd983;
+            border-radius: 4px;
+            padding: 4px;
+            font-size: 11px;
+            outline: none;
+        }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            height: 8px;
+            background: #1a120b;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 18px;
+            width: 14px;
+            border-radius: 2px;
+            background: linear-gradient(180deg, #c5a059 0%, #684f22 100%);
+            border: 1px solid #ffe6a3;
+            cursor: pointer;
+        }
+
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .flex-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- MAIN CHASSIS -->
+    <div class="vintage-panel">
+        
+        <!-- HEADER / BRAND PLATE -->
+        <div class="header-row">
+            <div class="flex-row">
+                <div class="tube-container">
+                    <div id="tube1" class="tube-glow"></div>
+                    <div id="tube2" class="tube-glow"></div>
+                </div>
+                <div>
+                    <h1 class="brand-title">Acoustic Drone</h1>
+                    <p class="brand-sub">Calibrato 442Hz • Offline Pro</p>
+                </div>
+            </div>
+            
+            <button id="airplayBtn" class="vintage-btn" style="padding: 4px 8px; font-size: 10px;">
+                <span style="font-size: 12px;">📡</span> AirPlay
+            </button>
+        </div>
+
+        <!-- ANALOG TUNER DIAL SECTION -->
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+            <div class="flex-between" style="font-size: 10px; color: #b38b4d; text-transform: uppercase; font-weight: bold;">
+                <span class="flex-row">
+                    <span id="micStatusDot" style="width: 8px; height: 8px; border-radius: 50%; background: #660000; display: inline-block;"></span>
+                    <span>Intonatore Ottoni</span>
+                </span>
+                <button id="btnSensToggle" style="background:none; border:none; color: #a88f76; font-size: 9px; cursor: pointer;">
+                    Sensibilità: <span id="sensLabel" style="color: #d4af37;">Studio (±0.5¢)</span>
+                </button>
+            </div>
+
+            <!-- RADIO FREQUENCY DIAL DISPLAY -->
+            <div class="radio-dial-glass">
+                <!-- Visual In-Tune Zone for Musicians -->
+                <div class="dial-sweet-zone" title="Zona d'Intonazione Ottimale Orecchio (±4¢)"></div>
+
+                <div class="dial-scale">
+                    <span>-50¢</span>
+                    <span>-25¢</span>
+                    <span class="dial-center-mark">0</span>
+                    <span>+25¢</span>
+                    <span>+50¢</span>
+                </div>
+                
+                <div style="position: relative; height: 32px; width: 100%;">
+                    <div id="analogNeedle" class="needle-line" style="left: 50%;"></div>
+                </div>
+
+                <div class="tuner-info-row">
+                    <span id="detectedNote" style="font-size: 13px; font-weight: bold; color: #ffd983; font-family: monospace;">--</span>
+                    <span id="detectedFreq" style="font-family: monospace; font-size: 10px; color: #a88f76;">0.0 Hz</span>
+                    <span id="centsOffset" style="font-family: monospace; font-size: 12px; font-weight: bold; color: #d4af37;">0.0 ¢</span>
+                </div>
+            </div>
+            
+            <div style="display: flex; justify-content: flex-end;">
+                <button id="btnMicToggle" style="background:none; border:none; font-size: 9px; text-transform: uppercase; color: #a88f76; cursor: pointer;">
+                    Microfono: <span id="micStateTxt" style="color: #ff9900; font-weight: bold;">ATTIVO</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- NOTE SELECTION GRID -->
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+            <div class="flex-between" style="font-size: 10px; color: #a88f76; text-transform: uppercase;">
+                <span>Nota Drone / Fondamentale</span>
+                <span id="selectedNoteDisplay" style="color: #d4af37; font-weight: bold;">LA (A)</span>
+            </div>
+            <div id="noteGrid" class="note-grid">
+                <!-- Dynamic grid generated via JavaScript -->
+            </div>
+        </div>
+
+        <!-- CHORD & TUNING SYSTEM CONTROLS -->
+        <div class="grid-2">
+            <div class="box-section">
+                <span class="lbl-title">Armonia / Accordo</span>
+                <div class="grid-3">
+                    <button id="btnTypeSingle" class="vintage-btn vintage-btn-active" style="padding: 4px 2px; font-size: 10px;">Nota</button>
+                    <button id="btnTypeMajor" class="vintage-btn" style="padding: 4px 2px; font-size: 10px;">Mag</button>
+                    <button id="btnTypeMinor" class="vintage-btn" style="padding: 4px 2px; font-size: 10px;">Min</button>
+                </div>
+            </div>
+
+            <div class="box-section">
+                <span class="lbl-title">Intonazione Sistema</span>
+                <div class="grid-2">
+                    <button id="btnTuningJust" class="vintage-btn vintage-btn-active" style="padding: 4px 2px; font-size: 9px;">Giusta (Pura)</button>
+                    <button id="btnTuningEqual" class="vintage-btn" style="padding: 4px 2px; font-size: 9px;">Equabile</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TIMBRE & OCTAVE SELECTION -->
+        <div class="grid-2" style="align-items: center;">
+            <div style="display: flex; flex-direction: column; gap: 2px;">
+                <label class="lbl-title">Timbro Strumento</label>
+                <select id="waveSelect">
+                    <option value="celli">🎻 Celli in Arcata (Emotional Cello VST)</option>
+                    <option value="sine">Pure Sine Wave</option>
+                    <option value="triangle">Warm Triangle Wave</option>
+                    <option value="organ">Rich Brass Organ</option>
+                </select>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 2px;">
+                <label class="lbl-title">Ottava</label>
+                <div class="flex-row">
+                    <button id="btnOctaveDown" class="vintage-btn" style="padding: 2px 10px;">-</button>
+                    <span id="octaveDisplay" style="flex: 1; text-align: center; font-family: monospace; font-weight: bold; font-size: 12px; color: #d4af37;">Ottava 3</span>
+                    <button id="btnOctaveUp" class="vintage-btn" style="padding: 2px 10px;">+</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- INDEPENDENT DRONE VOLUME & MAIN PLAY BUTTON -->
+        <div class="box-section">
+            <div class="flex-between">
+                <span class="lbl-title" style="width: 80px;">Vol Drone:</span>
+                <input id="droneVolumeSlider" type="range" min="0" max="1" step="0.01" value="1.0" style="width: 100%;">
+                <span id="droneVolDisplay" style="font-size: 10px; font-family: monospace; color: #d4af37; width: 40px; text-align: right;">100%</span>
+            </div>
+
+            <button id="mainPlayBtn" class="vintage-btn" style="width: 100%; padding: 10px; font-size: 12px; letter-spacing: 1px; color: #ffe6a3; border-color: #b38b4d;">
+                AVVIA DRONE
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Hidden Audio Element Bridge for iOS AirPlay Routing -->
+    <audio id="airplayAudioBridge" playsinline style="display:none;"></audio>
+
+    <!-- AUDIO ENGINE & APPLICATION LOGIC (PWA / Offline Compliant) -->
+    <script>
+        // High Compatibility Web Audio AudioContext Constructor for older iOS devices
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+
+        const A4_FREQ = 442.0;
+        const NOTES = [
+            { name: "DO", ita: "C", semitones: -9 },
+            { name: "DO#", ita: "C#", semitones: -8 },
+            { name: "RE", ita: "D", semitones: -7 },
+            { name: "MI♭", ita: "E♭", semitones: -6 },
+            { name: "MI", ita: "E", semitones: -5 },
+            { name: "FA", ita: "F", semitones: -4 },
+            { name: "FA#", ita: "F#", semitones: -3 },
+            { name: "SOL", ita: "G", semitones: -2 },
+            { name: "SOL#", ita: "G#", semitones: -1 },
+            { name: "LA", ita: "A", semitones: 0 },
+            { name: "SI♭", ita: "B♭", semitones: 1 },
+            { name: "SI", ita: "B", semitones: 2 }
+        ];
+
+        let selectedNoteIndex = 9; // Predefinito: LA (A)
+        let octaveOffset = 0;
+        let chordType = 'single';
+        let tuningSystem = 'just';
+        let waveform = 'celli';
+        let masterVolume = 1.0;
+        let droneVolume = 1.0;
+        let isPlaying = false;
+
+        let audioCtx = null;
+        let masterGain = null;
+        let droneGainNode = null;
+        let activeVoices = [];
+        let mediaStreamDestination = null;
+
+        let isMicActive = false;
+        let micStream = null;
+        let micAnalyser = null;
+        let tunerSensMode = 'studio';
+        let needlePosition = 50;
+        let needleVelocity = 0;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new AudioContextClass();
+
+                masterGain = audioCtx.createGain();
+                masterGain.gain.setValueAtTime(masterVolume, audioCtx.currentTime);
+
+                // Dedicated gain node for Drone with proper headroom (-6dBFS safety margin)
+                droneGainNode = audioCtx.createGain();
+                droneGainNode.gain.setValueAtTime(droneVolume * 0.45, audioCtx.currentTime);
+
+                // Audiophile Subsonic High-Pass Filter (Removes unneeded low-end rumble < 35Hz)
+                const subFilter = audioCtx.createBiquadFilter();
+                subFilter.type = 'highpass';
+                subFilter.frequency.setValueAtTime(35, audioCtx.currentTime);
+
+                // Audiophile True-Peak Brickwall Limiter to guarantee ZERO internal clipping
+                const limiter = audioCtx.createDynamicsCompressor();
+                limiter.threshold.setValueAtTime(-6.0, audioCtx.currentTime); // High headroom
+                limiter.knee.setValueAtTime(0.0, audioCtx.currentTime);       // Hard brickwall knee
+                limiter.ratio.setValueAtTime(20.0, audioCtx.currentTime);     // Instant limiting ratio
+                limiter.attack.setValueAtTime(0.003, audioCtx.currentTime);   // Ultra-fast 3ms attack
+                limiter.release.setValueAtTime(0.15, audioCtx.currentTime);
+
+                droneGainNode.connect(subFilter);
+                subFilter.connect(masterGain);
+                masterGain.connect(limiter);
+
+                // Pipe WebAudio through MediaStream into HTML5 Audio Element for AirPlay & background keeping
+                if (audioCtx.createMediaStreamDestination) {
+                    mediaStreamDestination = audioCtx.createMediaStreamDestination();
+                    limiter.connect(mediaStreamDestination);
+                    
+                    const bridge = document.getElementById('airplayAudioBridge');
+                    if (bridge) {
+                        try {
+                            bridge.srcObject = mediaStreamDestination.stream;
+                        } catch(e) {
+                            bridge.src = URL.createObjectURL(mediaStreamDestination.stream);
+                        }
+                    }
+                }
+                
+                limiter.connect(audioCtx.destination);
+            }
+        }
+
+        function unlockAudio() {
+            initAudio();
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            const bridge = document.getElementById('airplayAudioBridge');
+            if (bridge) bridge.play().catch(function(){});
+
+            const t1 = document.getElementById('tube1');
+            const t2 = document.getElementById('tube2');
+            if (t1) t1.className = 'tube-glow active';
+            if (t2) t2.className = 'tube-glow active';
+        }
+
+        function triggerAirPlayPicker() {
+            unlockAudio();
+            const bridge = document.getElementById('airplayAudioBridge');
+            if (bridge) {
+                if (typeof bridge.webkitShowPlaybackTargetPicker === 'function') {
+                    bridge.webkitShowPlaybackTargetPicker();
+                } else {
+                    alert("AirPlay / Bluetooth: Apri il Centro di Controllo dell'iPhone (swipe dall'alto in alto/basso a destra) per deviare l'audio alla cassa esterna.");
+                }
+            }
+        }
+
+        function getTargetFrequencies() {
+            const baseNote = NOTES[selectedNoteIndex];
+            const baseFreq = A4_FREQ * Math.pow(2, (baseNote.semitones + (octaveOffset - 1) * 12) / 12);
+
+            if (chordType === 'single') {
+                return [baseFreq];
+            }
+
+            if (tuningSystem === 'just') {
+                if (chordType === 'major') {
+                    return [baseFreq, baseFreq * (5 / 4), baseFreq * (3 / 2)];
+                } else if (chordType === 'minor') {
+                    return [baseFreq, baseFreq * (6 / 5), baseFreq * (3 / 2)];
+                }
+            } else {
+                if (chordType === 'major') {
+                    return [
+                        baseFreq,
+                        baseFreq * Math.pow(2, 4 / 12),
+                        baseFreq * Math.pow(2, 7 / 12)
+                    ];
+                } else if (chordType === 'minor') {
+                    return [
+                        baseFreq,
+                        baseFreq * Math.pow(2, 3 / 12),
+                        baseFreq * Math.pow(2, 7 / 12)
+                    ];
+                }
+            }
+            return [baseFreq];
+        }
+
+        function createCelliVoice(freq, targetGainNode) {
+            const voiceGroup = { oscillators: [], gains: [], filters: [], lfo: null, noise: null };
+            
+            // Ultra-clean multi-layering scaled down to prevent bus summation overload
+            const layers = [
+                { type: 'sawtooth', detune: -2.5, ratio: 1.0, vol: 0.10 },
+                { type: 'sawtooth', detune: +2.8, ratio: 1.0, vol: 0.10 },
+                { type: 'triangle', detune: -0.8, ratio: 0.5, vol: 0.08 }, // Sub cello body
+                { type: 'sine',     detune: +1.2, ratio: 2.0, vol: 0.04 }  // Pure harmonic overtone
+            ];
+
+            // Cello Smooth Chamber Filter (Flat Response Body Resonance)
+            const bodyFilter = audioCtx.createBiquadFilter();
+            bodyFilter.type = 'lowpass';
+            bodyFilter.frequency.setValueAtTime(1200, audioCtx.currentTime); // Warm acoustic roll-off
+
+            const warmFeltFilter = audioCtx.createBiquadFilter();
+            warmFeltFilter.type = 'peaking';
+            warmFeltFilter.frequency.setValueAtTime(220, audioCtx.currentTime); 
+            warmFeltFilter.Q.setValueAtTime(0.8, audioCtx.currentTime);     // Gentle broad EQ
+            warmFeltFilter.gain.setValueAtTime(0.0, audioCtx.currentTime);   // ZERO boost to stop clipping
+
+            layers.forEach(function(layer) {
+                const osc = audioCtx.createOscillator();
+                const vGain = audioCtx.createGain();
+
+                osc.type = layer.type;
+                osc.frequency.setValueAtTime(freq * layer.ratio, audioCtx.currentTime);
+                if (osc.detune) osc.detune.setValueAtTime(layer.detune, audioCtx.currentTime);
+
+                vGain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+                vGain.gain.exponentialRampToValueAtTime(layer.vol, audioCtx.currentTime + 0.6);
+
+                osc.connect(vGain);
+                vGain.connect(bodyFilter);
+                osc.start(0);
+
+                voiceGroup.oscillators.push(osc);
+                voiceGroup.gains.push(vGain);
+            });
+
+            // Bow Friction Noise Layer (Resin Drag)
+            const noiseBufSize = Math.floor(audioCtx.sampleRate * 2.0);
+            const noiseBuffer = audioCtx.createBuffer(1, noiseBufSize, audioCtx.sampleRate);
+            const noiseData = noiseBuffer.getChannelData(0);
+            for (let i = 0; i < noiseBufSize; i++) {
+                noiseData[i] = (Math.random() * 2 - 1) * 0.003; // Soft bow drag
+            }
+
+            const bowNoise = audioCtx.createBufferSource();
+            bowNoise.buffer = noiseBuffer;
+            bowNoise.loop = true;
+
+            const noiseFilter = audioCtx.createBiquadFilter();
+            noiseFilter.type = 'bandpass';
+            noiseFilter.frequency.setValueAtTime(freq * 2.5, audioCtx.currentTime);
+            noiseFilter.Q.setValueAtTime(1.5, audioCtx.currentTime);
+
+            const noiseGain = audioCtx.createGain();
+            noiseGain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+            noiseGain.gain.exponentialRampToValueAtTime(0.004, audioCtx.currentTime + 0.8);
+
+            bowNoise.connect(noiseFilter);
+            noiseFilter.connect(noiseGain);
+            noiseGain.connect(bodyFilter);
+            bowNoise.start(0);
+            voiceGroup.noise = bowNoise;
+            voiceGroup.gains.push(noiseGain);
+
+            bodyFilter.connect(warmFeltFilter);
+
+            const masterVoiceGain = audioCtx.createGain();
+            masterVoiceGain.gain.setValueAtTime(0.40, audioCtx.currentTime); // Pure clean output headroom
+            warmFeltFilter.connect(masterVoiceGain);
+            masterVoiceGain.connect(targetGainNode);
+            voiceGroup.gains.push(masterVoiceGain);
+
+            // Natural Vibrato LFO
+            const lfo = audioCtx.createOscillator();
+            const lfoGain = audioCtx.createGain();
+            lfo.frequency.setValueAtTime(4.8, audioCtx.currentTime);
+            lfoGain.gain.setValueAtTime(0, audioCtx.currentTime);
+            lfoGain.gain.setTargetAtTime(1.5, audioCtx.currentTime + 0.4, 0.5);
+
+            voiceGroup.oscillators.forEach(function(osc) {
+                lfo.connect(osc.frequency);
+            });
+            lfo.start(0);
+            voiceGroup.lfo = lfo;
+
+            return voiceGroup;
+        }
+
+        function createGenericVoice(freq, type, targetGainNode) {
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            osc.type = type === 'organ' ? 'sawtooth' : type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+            gainNode.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.12, audioCtx.currentTime + 0.3);
+
+            osc.connect(gainNode);
+            gainNode.connect(targetGainNode);
+            osc.start(0);
+
+            return { oscillators: [osc], gains: [gainNode] };
+        }
+
+        function startDrone() {
+            unlockAudio();
+            stopDrone();
+
+            const freqs = getTargetFrequencies();
+            activeVoices = freqs.map(function(f) {
+                if (waveform === 'celli') return createCelliVoice(f, droneGainNode);
+                return createGenericVoice(f, waveform, droneGainNode);
+            });
+
+            isPlaying = true;
+            const btn = document.getElementById('mainPlayBtn');
+            if (btn) {
+                btn.innerText = "FERMA DRONE";
+                btn.className = "vintage-btn vintage-btn-active";
+            }
+        }
+
+        function stopDrone() {
+            if (activeVoices.length > 0) {
+                activeVoices.forEach(function(voice) {
+                    if (voice.gains) {
+                        voice.gains.forEach(function(g) {
+                            try {
+                                const currentGain = Math.max(0.0001, g.gain.value);
+                                g.gain.setValueAtTime(currentGain, audioCtx.currentTime);
+                                g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.25);
+                            } catch(e) {}
+                        });
+                    }
+                    setTimeout(function() {
+                        if (voice.oscillators) voice.oscillators.forEach(function(o) { try { o.stop(0); } catch(e){} });
+                        if (voice.noise) try { voice.noise.stop(0); } catch(e){}
+                        if (voice.lfo) try { voice.lfo.stop(0); } catch(e){}
+                    }, 300);
+                });
+                activeVoices = [];
+            }
+            isPlaying = false;
+            const btn = document.getElementById('mainPlayBtn');
+            if (btn) {
+                btn.innerText = "AVVIA DRONE";
+                btn.className = "vintage-btn";
+            }
+        }
+
+        function updateDroneLive(rebuildAll) {
+            if (!isPlaying) return;
+            if (rebuildAll) {
+                startDrone();
+                return;
+            }
+
+            const targetFreqs = getTargetFrequencies();
+            activeVoices.forEach(function(voice, index) {
+                const targetFreq = targetFreqs[index % targetFreqs.length];
+                if (voice.oscillators) {
+                    voice.oscillators.forEach(function(osc) {
+                        osc.frequency.setTargetAtTime(targetFreq, audioCtx.currentTime, 0.12);
+                    });
+                }
+            });
+        }
+
+        // ==========================================
+        // REBUILT METRONOME ENGINE (TOONTRACK STYLE)
+        // ==========================================
+
+        function playKick(time) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.frequency.setValueAtTime(130, time);
+            osc.frequency.exponentialRampToValueAtTime(32, time + 0.07);
+
+            gain.gain.setValueAtTime(0.0, time);
+            gain.gain.linearRampToValueAtTime(1.0, time + 0.001);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + 0.12);
+
+            osc.connect(gain);
+            gain.connect(metroGainNode);
+            osc.start(time);
+            osc.stop(time + 0.13);
+        }
+
+        function playSnare(time) {
+            // Shell Body
+            const osc = audioCtx.createOscillator();
+            const oscGain = audioCtx.createGain();
+            osc.frequency.setValueAtTime(200, time);
+            osc.frequency.exponentialRampToValueAtTime(80, time + 0.08);
+            oscGain.gain.setValueAtTime(0.0, time);
+            oscGain.gain.linearRampToValueAtTime(0.7, time + 0.001);
+            oscGain.gain.exponentialRampToValueAtTime(0.01, time + 0.09);
+            osc.connect(oscGain);
+            oscGain.connect(metroGainNode);
+            osc.start(time);
+            osc.stop(time + 0.1);
+
+            // Snare Wire Noise
+            const bufSize = Math.floor(audioCtx.sampleRate * 0.12);
+            const buffer = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+
+            const noise = audioCtx.createBufferSource();
+            noise.buffer = buffer;
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'highpass';
+            filter.frequency.setValueAtTime(1200, time);
+
+            const noiseGain = audioCtx.createGain();
+            noiseGain.gain.setValueAtTime(0.0, time);
+            noiseGain.gain.linearRampToValueAtTime(0.6, time + 0.001);
+            noiseGain.gain.exponentialRampToValueAtTime(0.001, time + 0.12);
+
+            noise.connect(filter);
+            filter.connect(noiseGain);
+            noiseGain.connect(metroGainNode);
+            noise.start(time);
+            noise.stop(time + 0.13);
+        }
+
+        function playHiHat(time, isAccent) {
+            const dur = isAccent ? 0.08 : 0.03;
+            const bufSize = Math.floor(audioCtx.sampleRate * dur);
+            const buffer = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+
+            const noise = audioCtx.createBufferSource();
+            noise.buffer = buffer;
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'highpass';
+            filter.frequency.setValueAtTime(8000, time);
+
+            const gain = audioCtx.createGain();
+            gain.gain.setValueAtTime(0.0, time);
+            gain.gain.linearRampToValueAtTime(isAccent ? 0.6 : 0.3, time + 0.0005);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + dur);
+
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(metroGainNode);
+            noise.start(time);
+            noise.stop(time + dur + 0.01);
+        }
+
+        function playRide(time) {
+            const bufSize = Math.floor(audioCtx.sampleRate * 0.3);
+            const buffer = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+
+            const noise = audioCtx.createBufferSource();
+            noise.buffer = buffer;
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'bandpass';
+            filter.frequency.setValueAtTime(6000, time);
+            filter.Q.setValueAtTime(4.0, time);
+
+            const gain = audioCtx.createGain();
+            gain.gain.setValueAtTime(0.0, time);
+            gain.gain.linearRampToValueAtTime(0.4, time + 0.001);
+            gain.gain.exponentialRampToValueAtTime(0.001, time + 0.28);
+
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(metroGainNode);
+            noise.start(time);
+            noise.stop(time + 0.3);
+        }
+
+        function playImpulseClick(time, pitch, vol) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.type = metroSound === 'wood' ? 'triangle' : 'sine';
+            osc.frequency.setValueAtTime(pitch, time);
+
+            gain.gain.setValueAtTime(0.0, time);
+            gain.gain.linearRampToValueAtTime(vol, time + 0.0008);
+            gain.gain.linearRampToValueAtTime(0.0, time + 0.012);
+
+            osc.connect(gain);
+            gain.connect(metroGainNode);
+            osc.start(time);
+            osc.stop(time + 0.013);
+        }
+
+        function dispatchMetroSound(time, beatIndex, subBeatIndex) {
+            if (isMetroMuted) return;
+            if (metroMutePct > 0 && Math.random() * 100 < metroMutePct) return;
+
+            const isAccent = subBeatIndex === 0 && beatIndex === 0;
+            const isSubdivision = subBeatIndex > 0;
+
+            if (metroSound.startsWith('drum_')) {
+                if (metroSound === 'drum_std') {
+                    if (isSubdivision) {
+                        playHiHat(time, false);
+                    } else if (isAccent) {
+                        playKick(time);
+                        playHiHat(time, true);
+                    } else {
+                        playHiHat(time, false);
+                    }
+                } else if (metroSound === 'drum_rock' || metroSound === 'drum_funk') {
+                    if (isSubdivision) {
+                        playHiHat(time, false);
+                    } else {
+                        if (beatIndex === 0 || beatIndex === 2) playKick(time);
+                        else playSnare(time);
+                        playHiHat(time, true);
+                    }
+                } else if (metroSound === 'drum_swing') {
+                    playRide(time);
+                    if (beatIndex === 1 || beatIndex === 3) playHiHat(time, false);
+                }
+                return;
+            }
+
+            // Standard Click Instruments
+            let pitch = isAccent ? 1400 : 800;
+            if (isSubdivision) pitch = 1100;
+
+            if (metroSound === 'wood') pitch = isAccent ? 900 : (isSubdivision ? 650 : 500);
+            else if (metroSound === 'clock') pitch = isAccent ? 1800 : (isSubdivision ? 1300 : 950);
+            else if (metroSound === 'bell') pitch = isAccent ? 2400 : (isSubdivision ? 1800 : 1200);
+
+            let vol = isAccent ? 0.8 : (isSubdivision ? 0.25 : 0.5);
+            playImpulseClick(time, pitch, vol);
+        }
+
+        function advanceMetroTime() {
+            const num = parseInt(metroTimeSig.split('/')[0], 10) || 4;
+            const den = parseInt(metroTimeSig.split('/')[1], 10) || 4;
+
+            // Adjust timing for compound meters (6/8, 9/8, 12/8)
+            let baseBeatSeconds = (60.0 / metroBpm);
+            if (den === 8) {
+                baseBeatSeconds = (60.0 / metroBpm) * (4.0 / 8.0);
+            }
+
+            const stepSeconds = baseBeatSeconds / metroSubdivision;
+            nextBeatTime += stepSeconds;
+
+            currentSubBeat++;
+            if (currentSubBeat >= metroSubdivision) {
+                currentSubBeat = 0;
+                currentBeat = (currentBeat + 1) % num;
+            }
+        }
+
+        function metroScheduler() {
+            if (!isMetroRunning) return;
+
+            // Hardware Alignment Lock
+            if (nextBeatTime < audioCtx.currentTime) {
+                nextBeatTime = audioCtx.currentTime + 0.005;
+            }
+
+            if (nextBeatTime < audioCtx.currentTime + 0.1) {
+                const playTime = nextBeatTime;
+                const b = currentBeat;
+                const sb = currentSubBeat;
+
+                dispatchMetroSound(playTime, b, sb);
+
+                if (sb === 0) {
+                    highlightMetroBeatLED(b);
+                }
+
+                advanceMetroTime();
+            }
+
+            metroTimerId = setTimeout(metroScheduler, 25);
+        }
+
+        function renderMetroVisualLEDs() {
+            const container = document.getElementById('metroLeds');
+            if (!container) return;
+            container.innerHTML = '';
+            const beats = parseInt(metroTimeSig.split('/')[0], 10) || 4;
+            for (let i = 0; i < beats; i++) {
+                const led = document.createElement('div');
+                led.id = `metroLed_${i}`;
+                led.style.cssText = 'width: 8px; height: 8px; border-radius: 50%; background: #332211; border: 1px solid #553311;';
+                container.appendChild(led);
+            }
+        }
+
+        function highlightMetroBeatLED(beatIndex) {
+            const beats = parseInt(metroTimeSig.split('/')[0], 10) || 4;
+            for (let i = 0; i < beats; i++) {
+                const led = document.getElementById(`metroLed_${i}`);
+                if (led) {
+                    if (i === beatIndex) {
+                        led.style.background = i === 0 ? '#ffcc00' : '#d4af37';
+                        led.style.boxShadow = '0 0 6px #ffcc00';
+                    } else {
+                        led.style.background = '#332211';
+                        led.style.boxShadow = 'none';
+                    }
+                }
+            }
+        }
+
+        function safeAddListener(id, event, handler) {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener(event, handler);
+        }
+
+        function autoCorrelate(buf, sampleRate) {
+            let SIZE = buf.length;
+            let rms = 0;
+
+            for (let i = 0; i < SIZE; i++) {
+                let val = buf[i];
+                rms += val * val;
+            }
+            rms = Math.sqrt(rms / SIZE);
+
+            if (rms < 0.012) return -1;
+
+            let r1 = 0, r2 = SIZE - 1, thres = 0.2;
+            for (let i = 0; i < SIZE / 2; i++) {
+                if (Math.abs(buf[i]) < thres) { r1 = i; break; }
+            }
+            for (let i = 1; i < SIZE / 2; i++) {
+                if (Math.abs(buf[SIZE - i]) < thres) { r2 = SIZE - i; break; }
+            }
+
+            buf = buf.slice(r1, r2);
+            SIZE = buf.length;
+
+            let c = new Float32Array(SIZE);
+            for (let i = 0; i < SIZE; i++) {
+                for (let j = 0; j < SIZE - i; j++) {
+                    c[i] = c[i] + buf[j] * buf[j + i];
+                }
+            }
+
+            let d = 0;
+            while (c[d] > c[d + 1]) d++;
+            let maxval = -1, maxpos = -1;
+            for (let i = d; i < SIZE; i++) {
+                if (c[i] > maxval) {
+                    maxval = c[i];
+                    maxpos = i;
+                }
+            }
+            let T0 = maxpos;
+
+            let x1 = c[T0 - 1], x2 = c[T0], x3 = c[T0 + 1];
+            let a = (x1 + x3 - 2 * x2) / 2;
+            let b = (x3 - x1) / 2;
+            if (a) T0 = T0 - b / (2 * a);
+
+            return sampleRate / T0;
+        }
+
+        function processPitchDetection() {
+            if (!isMicActive || !micAnalyser) return;
+
+            const buf = new Float32Array(micAnalyser.fftSize);
+            micAnalyser.getFloatTimeDomainData(buf);
+            const pitchFreq = autoCorrelate(buf, audioCtx.sampleRate);
+
+            let targetCents = 0;
+
+            if (pitchFreq > 30 && pitchFreq < 1800) {
+                const noteNum = 12 * (Math.log(pitchFreq / A4_FREQ) / Math.log(2));
+                const nearestSemi = Math.round(noteNum);
+                const exactCents = (noteNum - nearestSemi) * 100;
+
+                let noteIdx = (nearestSemi + 9) % 12;
+                if (noteIdx < 0) noteIdx += 12;
+
+                const detectedNote = NOTES[noteIdx];
+                targetCents = exactCents;
+
+                const noteEl = document.getElementById('detectedNote');
+                const freqEl = document.getElementById('detectedFreq');
+                const centEl = document.getElementById('centsOffset');
+
+                if (noteEl) noteEl.innerText = detectedNote.name + " (" + detectedNote.ita + ")";
+                if (freqEl) freqEl.innerText = pitchFreq.toFixed(1) + " Hz";
+                if (centEl) {
+                    const sign = exactCents >= 0 ? '+' : '';
+                    centEl.innerText = sign + exactCents.toFixed(1) + " ¢";
+                }
+            }
+
+            const clampedCents = Math.max(-50, Math.min(50, targetCents));
+            const targetPos = ((clampedCents + 50) / 100) * 100;
+
+            const force = (targetPos - needlePosition) * 0.18;
+            needleVelocity = (needleVelocity + force) * 0.72;
+            needlePosition += needleVelocity;
+
+            const needleEl = document.getElementById('analogNeedle');
+            if (needleEl) {
+                needleEl.style.left = needlePosition.toFixed(2) + "%";
+                // Highlight needle in green when inside the ±4 cents musician tolerance zone
+                if (Math.abs(targetCents) <= 4.0) {
+                    needleEl.classList.add('in-tune');
+                } else {
+                    needleEl.classList.remove('in-tune');
+                }
+            }
+
+            if (isMicActive) {
+                requestAnimationFrame(processPitchDetection);
+            }
+        }
+
+        function startMicrophone() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
+            unlockAudio();
+
+            navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+                .then(function(stream) {
+                    micStream = stream;
+                    const micSource = audioCtx.createMediaStreamSource(stream);
+                    micAnalyser = audioCtx.createAnalyser();
+                    micAnalyser.fftSize = 2048;
+
+                    micSource.connect(micAnalyser);
+                    isMicActive = true;
+                    requestAnimationFrame(processPitchDetection);
+                })
+                .catch(function(err) {});
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Render Note Buttons Grid
+            const noteGrid = document.getElementById('noteGrid');
+            if (noteGrid) {
+                noteGrid.innerHTML = '';
+                NOTES.forEach(function(note, idx) {
+                    const btn = document.createElement('button');
+                    btn.id = "noteBtn_" + idx;
+                    btn.className = idx === selectedNoteIndex 
+                        ? 'vintage-btn vintage-btn-active' 
+                        : 'vintage-btn';
+                    btn.innerText = note.name + "\n(" + note.ita + ")";
+                    btn.addEventListener('click', function() {
+                        selectedNoteIndex = idx;
+                        NOTES.forEach(function(_, i) {
+                            const b = document.getElementById("noteBtn_" + i);
+                            if (b) {
+                                b.className = i === selectedNoteIndex 
+                                    ? 'vintage-btn vintage-btn-active' 
+                                    : 'vintage-btn';
+                            }
+                        });
+                        const disp = document.getElementById('selectedNoteDisplay');
+                        if (disp) disp.innerText = note.name + " (" + note.ita + ")";
+                        updateDroneLive(false);
+                    });
+                    noteGrid.appendChild(btn);
+                });
+            }
+
+            safeAddListener('airplayBtn', 'click', triggerAirPlayPicker);
+
+            safeAddListener('droneVolumeSlider', 'input', function(e) {
+                droneVolume = parseFloat(e.target.value);
+                if (droneGainNode && audioCtx) droneGainNode.gain.setValueAtTime(droneVolume * 0.45, audioCtx.currentTime);
+                const disp = document.getElementById('droneVolDisplay');
+                if (disp) disp.innerText = Math.round(droneVolume * 100) + "%";
+            });
+
+            safeAddListener('mainPlayBtn', 'click', function() {
+                if (isPlaying) stopDrone();
+                else startDrone();
+            });
+
+            safeAddListener('btnTypeSingle', 'click', function() {
+                chordType = 'single';
+                document.getElementById('btnTypeSingle').className = 'vintage-btn vintage-btn-active';
+                document.getElementById('btnTypeMajor').className = 'vintage-btn';
+                document.getElementById('btnTypeMinor').className = 'vintage-btn';
+                updateDroneLive(true);
+            });
+            safeAddListener('btnTypeMajor', 'click', function() {
+                chordType = 'major';
+                document.getElementById('btnTypeSingle').className = 'vintage-btn';
+                document.getElementById('btnTypeMajor').className = 'vintage-btn vintage-btn-active';
+                document.getElementById('btnTypeMinor').className = 'vintage-btn';
+                updateDroneLive(true);
+            });
+            safeAddListener('btnTypeMinor', 'click', function() {
+                chordType = 'minor';
+                document.getElementById('btnTypeSingle').className = 'vintage-btn';
+                document.getElementById('btnTypeMajor').className = 'vintage-btn';
+                document.getElementById('btnTypeMinor').className = 'vintage-btn vintage-btn-active';
+                updateDroneLive(true);
+            });
+
+            safeAddListener('btnTuningJust', 'click', function() {
+                tuningSystem = 'just';
+                document.getElementById('btnTuningJust').className = 'vintage-btn vintage-btn-active';
+                document.getElementById('btnTuningEqual').className = 'vintage-btn';
+                updateDroneLive(true);
+            });
+            safeAddListener('btnTuningEqual', 'click', function() {
+                tuningSystem = 'equal';
+                document.getElementById('btnTuningJust').className = 'vintage-btn';
+                document.getElementById('btnTuningEqual').className = 'vintage-btn vintage-btn-active';
+                updateDroneLive(true);
+            });
+
+            safeAddListener('btnOctaveDown', 'click', function() {
+                if (octaveOffset > -2) {
+                    octaveOffset--;
+                    document.getElementById('octaveDisplay').innerText = "Ottava " + (3 + octaveOffset);
+                    updateDroneLive(true);
+                }
+            });
+            safeAddListener('btnOctaveUp', 'click', function() {
+                if (octaveOffset < 2) {
+                    octaveOffset++;
+                    document.getElementById('octaveDisplay').innerText = "Ottava " + (3 + octaveOffset);
+                    updateDroneLive(true);
+                }
+            });
+
+            safeAddListener('waveSelect', 'change', function(e) {
+                waveform = e.target.value;
+                updateDroneLive(true);
+            });
+
+            document.body.addEventListener('touchstart', unlockAudio, { once: true });
+            document.body.addEventListener('click', unlockAudio, { once: true });
+
+            startMicrophone();
+        });
+    </script>
+</body>
+</html>
